@@ -10,13 +10,40 @@ Every day at 2:00 AM UTC, a GitHub Action runs the Supabase CLI to dump your dat
 
 ### 1. Create an R2 Bucket
 
-Go to the Cloudflare dashboard and create an R2 bucket for your backups. Note:
-- Bucket name
-- S3 endpoint URL
+1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) and select your account
+2. Click **R2** in the left sidebar
+3. Click **Create bucket**
+4. Give it a name (e.g. `supabase-backups`)
+5. Click **Create bucket**
+
+#### Set Up Lifecycle Policy (Auto-Delete After 14 Days)
+
+1. In the R2 dashboard, click on your bucket
+2. Go to the **Settings** tab
+3. Scroll to **Object lifecycle** and click **Create rule**
+4. Give it a name (e.g. `delete-old-backups`)
+5. Under **Action**, select **Delete**
+6. Set **Prefix** to `backup-` (this targets only backup files)
+7. Set **Days after object creation** to `14`
+8. Click **Create rule**
+
+Old backups will now be automatically deleted after 2 weeks, keeping storage costs low.
+
+#### Get the S3 Endpoint
+
+1. In the R2 dashboard, go to your bucket
+2. Look for **S3 API** or **Bucket details**
+3. Copy the endpoint URL (format: `https://<account-id>.r2.cloudflarestorage.com`)
 
 ### 2. Create R2 API Token
 
-In Cloudflare R2, create an API token with **Object Read & Write** permissions scoped to your bucket. Save the Access Key ID and Secret Access Key.
+1. In the R2 dashboard, click **Manage R2 API Tokens**
+2. Click **Create API token**
+3. Give it a name (e.g. `backup-uploader`)
+4. Set permissions to **Object Read & Write**
+5. Scope it to your bucket (select **Selected buckets** and pick yours)
+6. Click **Create API token**
+7. **Save the Access Key ID and Secret Access Key immediately** — the secret key won't be shown again
 
 ### 3. Get Your Supabase Connection String
 
