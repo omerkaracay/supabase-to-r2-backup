@@ -2,9 +2,27 @@
 
 Automated daily backups of Supabase databases to Cloudflare R2 storage, using GitHub Actions.
 
+> **Status:** Scheduled backups are **DISABLED**. The workflow requires repository secrets to be configured before it can run. See [Required Secrets](#required-secrets) below. You can trigger a manual run from the Actions tab, but it will fail until secrets are added.
+
 ## How It Works
 
-Every day at 2:00 AM UTC, a GitHub Action runs the Supabase CLI to dump your database (roles, schema, and data), compresses it into a zip file, and uploads it to your Cloudflare R2 bucket.
+A GitHub Action runs the Supabase CLI to dump your database (roles, schema, and data), compresses it into a zip file, and uploads it to your Cloudflare R2 bucket.
+
+The schedule (`0 2 * * *` UTC) is commented out in `.github/workflows/backup.yml` until secrets are configured. To re-enable, uncomment the schedule section.
+
+## Required Secrets
+
+This workflow will fail without these repository secrets. Go to Settings > Secrets and add:
+
+| Secret | Value |
+|--------|-------|
+| `SUPABASE_DB_URL` | Your Supabase session pooler connection string |
+| `CF_ACCESS_KEY_ID` | Cloudflare R2 API Access Key ID |
+| `CF_SECRET_ACCESS_KEY` | Cloudflare R2 API Secret Access Key |
+| `CF_BUCKET_NAME` | Your R2 bucket name |
+| `CF_BUCKET_ENDPOINT` | Your R2 S3 endpoint URL |
+
+Without these secrets, `pg_dump` falls back to a local socket connection which doesn't exist in the CI runner, causing immediate failure.
 
 ## Setup
 
@@ -56,19 +74,18 @@ In your Supabase project:
 
 ### 4. Add Repository Secrets
 
-In your GitHub repo, go to Settings > Secrets and add:
+In your GitHub repo, go to Settings > Secrets and add the secrets listed in [Required Secrets](#required-secrets) above.
 
-| Secret | Value |
-|--------|-------|
-| `SUPABASE_DB_URL` | Your Supabase session pooler connection string |
-| `CF_ACCESS_KEY_ID` | Cloudflare R2 API Access Key ID |
-| `CF_SECRET_ACCESS_KEY` | Cloudflare R2 API Secret Access Key |
-| `CF_BUCKET_NAME` | Your R2 bucket name |
-| `CF_BUCKET_ENDPOINT` | Your R2 S3 endpoint URL |
+### 5. Enable the Schedule
 
-### 5. Done
+After adding secrets, uncomment the schedule in `.github/workflows/backup.yml`:
 
-The workflow runs automatically on a daily schedule. You can also trigger it manually from the Actions tab.
+```yaml
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+```
 
 ## Backup Output
 
@@ -91,6 +108,10 @@ Your Supabase connection string uses a direct connection (`db.<ref>.supabase.co`
 - If you forgot it, reset it in Supabase Settings > Database
 - After resetting, copy the full session pooler connection string (it includes the new password)
 - Update the `SUPABASE_DB_URL` secret
+
+### "No such file or directory" / socket errors
+
+The workflow secrets are not configured. Check that all 5 secrets are set in your repository settings. Without `SUPABASE_DB_URL`, `pg_dump` falls back to a local socket that doesn't exist.
 
 ## License
 
