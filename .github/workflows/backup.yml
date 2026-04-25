@@ -1,8 +1,8 @@
 name: Supa-backup-to-R2
 on:
   workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
-  schedule:
-    - cron: '0 2 * * *' # Runs every day at 2:00 AM UTC
+# schedule:
+#   - cron: '0 2 * * *' # DISABLED - no secrets configured
 
 permissions:
   contents: read # Only needs to read the repo, no write access needed
