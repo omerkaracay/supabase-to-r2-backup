@@ -3,7 +3,7 @@ name: Supa-backup-to-R2
 on:
   workflow_dispatch: # Manuel çalıştırmaya izin verir
   schedule:
-    - cron: '30 1 * * *'
+    - cron: '0 20 * * *'
 
 permissions:
   contents: read # Repo içeriğini okumak için yeterli
